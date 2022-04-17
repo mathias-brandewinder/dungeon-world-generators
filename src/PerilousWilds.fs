@@ -126,30 +126,152 @@ module App =
             let beast = {
                 Table = "beast"
                 Outcomes = [
-                    7, value "earthbound"
-                    3, value "airborne"
-                    2, value "water-going"
+                    7, T (Table "earthbound")
+                    3, T (Table "airborne")
+                    2, T (Table "water-going")
+                    ]
+                }
+
+            let earthbound = {
+                Table = "earthbound"
+                Outcomes = [
+                    1, value "termite, tick, louse"
+                    1, value "snail, slug, worm"
+                    1, value "ant, centiped, scorpion"
+                    1, value "snake, lizard"
+                    1, value "vole, rat, weasel"
+                    1, value "boar, pig"
+                    1, value "dog, fox, wolf"
+                    1, value "cat, lion, panther"
+                    1, value "deer, horse, camel"
+                    1, value "ox, rhino"
+                    1, value "bear, ape, gorilla"
+                    1, value "mammoth, dinosaur"
+                    ]
+                }
+
+            let airborne = {
+                Table = "airborne"
+                Outcomes = [
+                    1, value "mosquito, firefly"
+                    1, value "locust, dragonfly, moth"
+                    1, value "bee, wasp"
+                    1, value "chicken, duck, goose"
+                    1, value "songbird, parrot"
+                    1, value "gull, waterbird"
+                    1, value "heron, crane, stork"
+                    1, value "crow, raven"
+                    1, value "hawk, falcon"
+                    1, value "eagle, owl"
+                    1, value "condor"
+                    1, value "pteranodon"
+                    ]
+                }
+
+            let waterGoing = {
+                Table = "water-going"
+                Outcomes = [
+                    1, value "insect"
+                    1, value "jelly, anemone"
+                    1, value "clam, oyster, snail"
+                    1, value "eel, snake"
+                    1, value "frog, toad"
+                    1, value "fish"
+                    1, value "crab, lobster"
+                    1, value "turtle"
+                    1, value "alligator, crocodile"
+                    1, value "dolphin, shark"
+                    1, value "squid, octopus"
+                    1, value "whale"
                     ]
                 }
 
             let humanoid = {
                 Table = "humanoid"
                 Outcomes = [
-                    7, value "common"
-                    3, value "uncommon"
-                    2, value "hybrid"
+                    7, T (Table "common")
+                    3, T (Table "uncommon")
+                    2, T (Table "hybrid")
+                    ]
+                }
+
+            let common = {
+                Table = "common"
+                Outcomes = [
+                    3, value "halfling" // TODO size
+                    2, value "goblin, kobold"
+                    2, value "dwarf, gnome"
+                    2, value "orc, hobgoblin, gnoll"
+                    2, value "half-elf, half-orc, ..."
+                    1, value "elf"
+                    ]
+                }
+
+            let uncommon = {
+                Table = "uncommon"
+                Outcomes = [
+                    1, value "fey" // TODO size
+                    2, value "catfolk, dogfolk"
+                    3, value "lizardfolk, merfolk"
+                    1, value "birdfolk"
+                    3, value "ogre, troll"
+                    2, value "cyclops, giant"
+                    ]
+                }
+
+            let hybrid = {
+                Table = "hybrid"
+                Outcomes = [
+                    2, value "centaur"
+                    3, value "werewolf, werebear"
+                    1, value "werecreature (human + beast)" // TODO
+                    4, value "human + beast"
+                    2, value "human + 2 beast"
                     ]
                 }
 
             let monster = {
                 Table = "monster"
                 Outcomes = [
-                    7, value "unusual"
-                    3, value "rare"
-                    2, value "legendary"
+                    7, T (Table "unusual")
+                    3, T (Table "rare")
+                    2, T (Table "legendary")
                     ]
                 }
 
+            let unusual = {
+                Table = "unusual"
+                Outcomes = [
+                    3, value "plant, fungus"
+                    2, value "undead + human" // TODO
+                    1, value "undead + humanoid" // TODO
+                    2, value "beast + beast" // TODO
+                    2, value "beast + ability" // TODO
+                    2, value "beast + feature" // TODO
+                    ]
+                }
+
+            let rare = {
+                Table = "rare"
+                Outcomes = [
+                    3, value "slime, ooze" // TODO amorphous tag
+                    3, value "creation (construct)" // TODO construct tag
+                    3, value "beast + oddity" // TODO
+                    3, T (Table "unnatural entity")
+                    ]
+                }
+
+            let legendary = {
+                Table = "legendary"
+                Outcomes = [
+                    3, value "dragon, colossus" // TODO huge tag
+                    3, value "unusual + huge" // TODO construct tag
+                    3, value "rare + huge" // TODO
+                    1, value "beast + dragon" // TODO
+                    1, value "unusual + dragon" // TODO
+                    1, value "rare + dragon" // TODO
+                    ]
+                }
             let steading = {
                 Table = "steading"
                 Outcomes = [
@@ -576,14 +698,24 @@ module App =
                         2, value "ambush"
                         ]
                     }
+
         let context =
             [
                 General.element
                 General.oddity
                 General.creature
                 General.beast
+                General.earthbound
+                General.airborne
+                General.waterGoing
                 General.humanoid
+                General.common
+                General.uncommon
+                General.hybrid
                 General.monster
+                General.unusual
+                General.rare
+                General.legendary
                 General.steading
                 Dungeon.discovery
                 Dungeon.dressing
@@ -627,9 +759,18 @@ module App =
     open Types
     open Data
 
+    type Setting =
+        | Wilderness
+        | Dungeon
+
+    let tableName (setting: Setting) (name: string) =
+        match setting with
+        | Wilderness -> name
+        | Dungeon -> "dungeon " + name
+
     type Model = {
-        Test: string
         Context: Context
+        Setting: Setting
         Discovery: X
         Danger: X
         Creature: X
@@ -643,29 +784,37 @@ module App =
     type Msg =
         | Roll of Roll
         | ReRoll of (Roll * Guid)
+        | SwitchSetting
 
     let init () : Model * Cmd<Msg> =
+        let setting = Dungeon
         {
-            Test = "Perilous Wilds"
             Context = context
-            Danger = roll context "danger"
-            Discovery = roll context "discovery"
-            Creature = roll context "creature"
+            Setting = setting
+            Danger = roll context (tableName setting "danger")
+            Discovery = roll context (tableName setting "discovery")
+            Creature = roll context ("creature")
         },
         Cmd.none
 
     let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
         match msg with
+        | SwitchSetting ->
+            let setting =
+                match model.Setting with
+                | Dungeon -> Wilderness
+                | Wilderness -> Dungeon
+            { model with Setting = setting }, Cmd.none
         | Roll rollType ->
             let model =
                 match rollType with
                 | Danger ->
                     { model with
-                        Danger = roll context "danger"
+                        Danger = roll context (tableName model.Setting "danger")
                     }
                 | Discovery ->
                     { model with
-                        Discovery = roll context "discovery"
+                        Discovery = roll context (tableName model.Setting "discovery")
                     }
                 | Creature ->
                     { model with
@@ -707,7 +856,19 @@ module App =
         Container.container [] [
 
             Box.box' [] [
-                Heading.h2 [] [ str "In The Wild"]
+
+                Level.level [] [
+                    Level.left [] [
+                        Heading.h1 [] [
+                            match model.Setting with
+                            | Wilderness -> str "Wilderness"
+                            | Dungeon -> str "Dungeon"
+                            ]
+                        ]
+                    Level.right [] [
+                        Button.button [ Button.OnClick (fun _ -> dispatch SwitchSetting) ] [ str "switch" ]
+                        ]
+                    ]
 
                 Level.level [] [
                     Level.left [ Props [ OnClick(fun _ -> dispatch (Roll Discovery)) ] ] [
@@ -724,7 +885,7 @@ module App =
                         ]
                     ]
 
-                br []
+                hr []
 
                 Level.level [] [
                     Level.left [ Props [ OnClick(fun _ -> dispatch (Roll Danger)) ] ] [
@@ -741,7 +902,7 @@ module App =
                         ]
                     ]
 
-                br []
+                hr []
 
                 Level.level [] [
                     Level.left [ Props [ OnClick(fun _ -> dispatch (Roll Creature)) ] ] [
