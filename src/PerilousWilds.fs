@@ -116,10 +116,37 @@ module App =
             let creature = {
                 Table = "creature"
                 Outcomes = [
-                    4, value "beast"
+                    4, T (Table "beast")
                     2, value "human"
-                    2, value "humanoid"
-                    3, value "monster"
+                    2, T (Table "humanoid")
+                    3, T (Table "monster")
+                    ]
+                }
+
+            let beast = {
+                Table = "beast"
+                Outcomes = [
+                    7, value "earthbound"
+                    3, value "airborne"
+                    2, value "water-going"
+                    ]
+                }
+
+            let humanoid = {
+                Table = "humanoid"
+                Outcomes = [
+                    7, value "common"
+                    3, value "uncommon"
+                    2, value "hybrid"
+                    ]
+                }
+
+            let monster = {
+                Table = "monster"
+                Outcomes = [
+                    7, value "unusual"
+                    3, value "rare"
+                    2, value "legendary"
                     ]
                 }
 
@@ -511,17 +538,52 @@ module App =
                 let hazard = {
                     Table = "hazard"
                     Outcomes = [
-                        2, value "unnatural"
-                        8, value "natural"
-                        2, value "trap"
+                        2, T (Table "unnatural")
+                        8, T (Table "natural")
+                        2, T (Table "trap")
                         ]
                     }
 
+                let unnatural = {
+                    Table = "unnatural"
+                    Outcomes = [
+                        3, value "taint, blight, curse"
+                        5, value "arcane trap, effect"
+                        3, value "planar trap, effect"
+                        1, value "divine"
+                        ]
+                    }
+
+                let natural = {
+                    Table = "natural"
+                    Outcomes = [
+                        2, value "blinding mist, fog"
+                        2, value "bog, mire, quicksand"
+                        3, value "pitfall, sinkhole, chasm"
+                        2, value "poison, disease"
+                        2, value "flood, fire, tornado"
+                        1, T (Table "oddity") // TODO fix this
+                        ]
+                    }
+
+                let trap = {
+                    Table = "trap"
+                    Outcomes = [
+                        2, value "alarm"
+                        3, value "ensnaring, paralyzing"
+                        3, value "injurious (pit, ...)"
+                        1, value "gas, fire, poison"
+                        2, value "ambush"
+                        ]
+                    }
         let context =
             [
                 General.element
                 General.oddity
                 General.creature
+                General.beast
+                General.humanoid
+                General.monster
                 General.steading
                 Dungeon.discovery
                 Dungeon.dressing
@@ -554,6 +616,9 @@ module App =
                 Wilderness.Danger.danger
                 Wilderness.Danger.unnaturalEntity
                 Wilderness.Danger.hazard
+                Wilderness.Danger.unnatural
+                Wilderness.Danger.natural
+                Wilderness.Danger.trap
             ]
             |> List.map (fun x -> x.Table, x)
             |> Map.ofList
@@ -620,7 +685,7 @@ module App =
                     }
                 | Creature ->
                     { model with
-                        Discovery = reroll context identifier model.Creature
+                        Creature = reroll context identifier model.Creature
                     }
             model, Cmd.none
 
