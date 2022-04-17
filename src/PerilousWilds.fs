@@ -905,7 +905,7 @@ module App =
 
                 Level.level [] [
                     Level.left [ Props [ OnClick(fun _ -> dispatch (Roll Discovery)) ] ] [
-                        Level.item [] [ Image.image [ Image.Is32x32 ] [ img [ Src "/d20.png" ] ] ]
+                        Level.item [] [ Image.image [ Image.Is32x32 ] [ img [ Src "d20.png" ] ] ]
                         Level.item []
                             [ Heading.h3 [ ] [ str "Discovery" ]
                             ]
@@ -922,7 +922,7 @@ module App =
 
                 Level.level [] [
                     Level.left [ Props [ OnClick(fun _ -> dispatch (Roll Danger)) ] ] [
-                        Level.item [  ] [ Image.image [ Image.Is32x32 ] [ img [ Src "/d20.png" ] ] ]
+                        Level.item [  ] [ Image.image [ Image.Is32x32 ] [ img [ Src "d20.png" ] ] ]
                         Level.item []
                             [ Heading.h3 [ ] [ str "Danger" ]
                             ]
@@ -940,7 +940,7 @@ module App =
             Box.box' [] [
                 Level.level [] [
                     Level.left [ Props [ OnClick(fun _ -> dispatch (Roll Creature)) ] ] [
-                        Level.item [  ] [ Image.image [ Image.Is32x32 ] [ img [ Src "/d20.png" ] ] ]
+                        Level.item [  ] [ Image.image [ Image.Is32x32 ] [ img [ Src "d20.png" ] ] ]
                         Level.item []
                             [ Heading.h3 [ ] [ str "Creature" ]
                             ]
