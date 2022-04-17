@@ -79,6 +79,7 @@ module App =
 
         open Types
         let value (txt: string) = V (Value txt)
+        let table (txt: string) = T (Table txt)
 
         [<RequireQualifiedAccess>]
         module General =
@@ -257,7 +258,7 @@ module App =
                     3, value "slime, ooze" // TODO amorphous tag
                     3, value "creation (construct)" // TODO construct tag
                     3, value "beast + oddity" // TODO
-                    3, T (Table "unnatural entity")
+                    3, table "unnatural entity"
                     ]
                 }
 
@@ -272,6 +273,7 @@ module App =
                     1, value "rare + dragon" // TODO
                     ]
                 }
+
             let steading = {
                 Table = "steading"
                 Outcomes = [
@@ -288,9 +290,9 @@ module App =
             let discovery = {
                 Table = "dungeon discovery"
                 Outcomes = [
-                    3, T (Table "dressing")
-                    6, T (Table "feature")
-                    3, T (Table "find")
+                    3, table "dressing"
+                    6, table "feature"
+                    3, table "find"
                     ]
                 }
 
@@ -308,7 +310,7 @@ module App =
                     1, value "broken door, wall"
                     1, value "breeze, wind, smell"
                     1, value "lichen, moss, fungus"
-                    1, T (Table "oddity")
+                    1, table "oddity"
                     ]
                 }
 
@@ -351,9 +353,9 @@ module App =
             let danger = {
                 Table = "dungeon danger"
                 Outcomes = [
-                    4, T (Table "trap")
-                    7, T (Table "dungeon creature")
-                    1, T (Table "entity")
+                    4, table "trap"
+                    7, table "dungeon creature"
+                    1, table "entity"
                     ]
                 }
 
@@ -368,7 +370,7 @@ module App =
                     1, value "chopping, slashing"
                     1, value "confusing (maze, etc...)"
                     1, value "gas (poison, etc...)"
-                    1, T (Table "element")
+                    1, table "element"
                     1, value "ambush"
                     1, value "magical"
                     // 1, Repeat 2 //value "roll twice"
@@ -419,53 +421,53 @@ module App =
                 let discovery = {
                     Table = "discovery"
                     Outcomes = [
-                        1, T (Table "unnatural feature")
-                        3, T (Table "natural feature")
-                        2, T (Table "evidence")
-                        2, T (Table "creature")
-                        4, T (Table "structure")
+                        1, table "unnatural feature"
+                        3, table "natural feature"
+                        2, table "evidence"
+                        2, table "creature"
+                        4, table "structure"
                         ]
                     }
 
                 let unnaturalFeature = {
                     Table = "unnatural feature"
                     Outcomes = [
-                        9, T (Table "arcane")
-                        2, value "planar"
-                        1, value "divine"
+                        9, table "arcane"
+                        2, table "planar"
+                        1, table "divine"
                         ]
                     }
 
                 let naturalFeature = {
                     Table = "natural feature"
                     Outcomes = [
-                        2, T (Table "lair")
-                        2, T (Table "obstacle")
-                        3, T (Table "terrain change")
-                        2, T (Table "water feature")
-                        2, T (Table "landmark")
-                        1, T (Table "resource")
+                        2, table "lair"
+                        2, table "obstacle"
+                        3, table "terrain change"
+                        2, table "water feature"
+                        2, table "landmark"
+                        1, table "resource"
                         ]
                     }
 
                 let evidence = {
                     Table = "evidence"
                     Outcomes = [
-                        6, T (Table "tracks, spoor")
-                        2, T (Table "remains, debris")
-                        1, T (Table "stash, cache")
+                        6, table "tracks, spoor"
+                        2, table "remains, debris"
+                        1, table "stash, cache"
                         ]
                     }
 
                 let structure = {
                     Table = "structure"
                     Outcomes = [
-                        1, T (Table "enigmatic")
-                        2, T (Table "infrastructure")
-                        1, T (Table "dwelling")
-                        2, T (Table "burial, religious")
-                        2, T (Table "steading") // TODO general table
-                        4, T (Table "ruin")
+                        1, table "enigmatic"
+                        2, table "infrastructure"
+                        1, table "dwelling"
+                        2, table "burial, religious"
+                        2, table "steading"
+                        4, table "ruin"
                         ]
                     }
 
@@ -477,6 +479,27 @@ module App =
                         2, value "alteration, mutation"
                         3, value "enchantment"
                         2, value "source, repository"
+                        ]
+                    }
+
+                let planar = {
+                    Table = "planar"
+                    Outcomes = [
+                        4, value "distortion, warp"
+                        4, value "portal, gate"
+                        2, value "rift, tear"
+                        2, value "outpost"
+                        ]
+                    }
+
+                let divine = {
+                    Table = "divine"
+                    Outcomes = [
+                        3, value "mark, sign"
+                        3, value "cursed place"
+                        3, value "hallowed place"
+                        2, value "watched place"
+                        1, value "presence"
                         ]
                     }
 
@@ -731,6 +754,8 @@ module App =
                 Wilderness.Discovery.evidence
                 Wilderness.Discovery.structure
                 Wilderness.Discovery.arcane
+                Wilderness.Discovery.planar
+                Wilderness.Discovery.divine
                 Wilderness.Discovery.lair
                 Wilderness.Discovery.obstacle
                 Wilderness.Discovery.terrainChange
@@ -787,7 +812,7 @@ module App =
         | SwitchSetting
 
     let init () : Model * Cmd<Msg> =
-        let setting = Dungeon
+        let setting = Wilderness
         {
             Context = context
             Setting = setting
@@ -804,7 +829,12 @@ module App =
                 match model.Setting with
                 | Dungeon -> Wilderness
                 | Wilderness -> Dungeon
-            { model with Setting = setting }, Cmd.none
+            { model with
+                Setting = setting
+                Danger = roll context (tableName setting "danger")
+                Discovery = roll context (tableName setting "discovery")
+            }
+            , Cmd.none
         | Roll rollType ->
             let model =
                 match rollType with
@@ -859,14 +889,17 @@ module App =
 
                 Level.level [] [
                     Level.left [] [
-                        Heading.h1 [] [
+                        Heading.h2 [] [
                             match model.Setting with
                             | Wilderness -> str "Wilderness"
                             | Dungeon -> str "Dungeon"
                             ]
                         ]
                     Level.right [] [
-                        Button.button [ Button.OnClick (fun _ -> dispatch SwitchSetting) ] [ str "switch" ]
+                        Button.button [
+                            Button.IsLight
+                            Button.OnClick (fun _ -> dispatch SwitchSetting) ]
+                            [ str "switch" ]
                         ]
                     ]
 
@@ -902,8 +935,9 @@ module App =
                         ]
                     ]
 
-                hr []
+                ]
 
+            Box.box' [] [
                 Level.level [] [
                     Level.left [ Props [ OnClick(fun _ -> dispatch (Roll Creature)) ] ] [
                         Level.item [  ] [ Image.image [ Image.Is32x32 ] [ img [ Src "/d20.png" ] ] ]

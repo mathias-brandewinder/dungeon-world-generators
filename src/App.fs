@@ -76,7 +76,11 @@ module App =
                                 [ str "Play to find out what happens."]
                             ]
                         Level.right [] [
-                            Button.button [ Button.Size IsSmall; Button.IsLight; Button.OnClick (fun _ -> dispatch SwitchView) ] [ str "Switch" ]
+                            Button.button [
+                                Button.Size IsSmall
+                                Button.IsLight
+                                Button.OnClick (fun _ -> dispatch SwitchView) ]
+                                [ str "Switch" ]
                             ]
                     ]
                 ]
