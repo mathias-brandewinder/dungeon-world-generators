@@ -30,7 +30,7 @@ module App =
         }
 
     type Msg =
-        | SwitchView
+        | SwitchView of SelectedView
         | DW of DungeonWorld.App.Msg
         | PW of PerilousWilds.App.Msg
 
@@ -51,12 +51,8 @@ module App =
 
     let update (msg: Msg) (model: Model) =
         match msg with
-        | SwitchView ->
-            let view =
-                match model.SelectedView with
-                | DungeonWorld -> PerilousWilds
-                | PerilousWilds -> DungeonWorld
-            { model with SelectedView = view }, Cmd.none
+        | SwitchView selectedView->
+            { model with SelectedView = selectedView }, Cmd.none
         | DW dwMsg ->
             let updated, cmd = DungeonWorld.App.update dwMsg model.DungeonWorld
             { model with DungeonWorld = updated }, Cmd.map DW cmd
@@ -65,8 +61,8 @@ module App =
             { model with PerilousWilds = updated }, Cmd.map PW cmd
 
     let hero dispatch =
-        Hero.hero [ Hero.Color IsDark ]
-            [ Hero.body []
+        Hero.hero [ Hero.Color IsDark ] [
+            Hero.body []
                 [
                     Heading.h1 [] [ str "Dungeon World" ]
                     Heading.h4 [ Heading.IsSubtitle] [
@@ -75,13 +71,9 @@ module App =
                             [ str "Play to find out what happens."]
                         ]
 
-                    Hero.foot [] [
-                        Button.button [
-                                Button.Size IsSmall
-                                Button.IsLight
-                                Button.OnClick (fun _ -> dispatch SwitchView) ]
-                                [ str "Switch" ]
-                        ]
+                    a [ OnClick (fun _ -> dispatch (SwitchView DungeonWorld))] [ str "Moves" ]
+                    str " | "
+                    a [ OnClick (fun _ -> dispatch (SwitchView PerilousWilds)) ] [ str "Dangers" ]
                 ]
             ]
 
