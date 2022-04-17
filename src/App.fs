@@ -312,7 +312,7 @@ module App =
             ]
 
     // App
-    Program.mkProgram init update view
+    Program.mkProgram PerilousWilds.App.init PerilousWilds.App.update PerilousWilds.App.render // init update view
     |> Program.withReactSynchronous "elmish-app"
     |> Program.withConsoleTrace
     |> Program.run
