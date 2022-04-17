@@ -69,20 +69,19 @@ module App =
             [ Hero.body []
                 [
                     Heading.h1 [] [ str "Dungeon World" ]
-                    Level.level [] [
-                        Heading.h4 [ Heading.IsSubtitle] [
-                            str ""
-                            a [ Href "https://dungeon-world.com/"; Style [ Color "Red" ] ]
-                                [ str "Play to find out what happens."]
-                            ]
-                        Level.right [] [
-                            Button.button [
+                    Heading.h4 [ Heading.IsSubtitle] [
+                        str ""
+                        a [ Href "https://dungeon-world.com/"; Style [ Color "Red" ] ]
+                            [ str "Play to find out what happens."]
+                        ]
+
+                    Hero.foot [] [
+                        Button.button [
                                 Button.Size IsSmall
                                 Button.IsLight
                                 Button.OnClick (fun _ -> dispatch SwitchView) ]
                                 [ str "Switch" ]
-                            ]
-                    ]
+                        ]
                 ]
             ]
 
